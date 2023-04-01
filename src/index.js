@@ -3,6 +3,7 @@ import LoadMoreBtn from './load_more_btn';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
+import axios from 'axios';
 
 let lightbox = new SimpleLightbox('.gallery a', { /* options */ });
 
@@ -12,17 +13,14 @@ const loadMoreBtn = new LoadMoreBtn({
 })
 
 const newsApiService = new NewsApiService()
-
 const formEl = document.querySelector("#search-form");
-
 const galleryEl = document.querySelector(".gallery")
-
 formEl.addEventListener("submit", submitFormEvtHandler);
 
 loadMoreBtn.refs.button.addEventListener("click", onLoadMore);
 console.log(newsApiService.page)
 
-function submitFormEvtHandler(evt) {
+async function submitFormEvtHandler(evt) {
   console.log(newsApiService.page)
 
   evt.preventDefault();
@@ -33,40 +31,36 @@ function submitFormEvtHandler(evt) {
     Notify.failure("Empty, request!");
   }else{
     console.log(newsApiService.page)
-    newsApiService.fetchArticles().then(images => {
-      console.log(newsApiService.page)
+   const newData =  await newsApiService.fetchArticles();
+console.log(newData);
+    console.log(newsApiService.page)
       deleteMarkup();
-      renderMarkup(images.hits);
+      renderMarkup(newData.hits);
       lightbox.refresh();
 
-      if(images.totalHits !== 0){
-        Notify.success(`"Hooray! We found ${images.totalHits} images."`);
-
-        console.log(Math.ceil(images.totalHits/40))
-        console.log(newsApiService.page)
+      if(newData.totalHits !== 0){
+        Notify.success(`"Hooray! We found ${newData.totalHits} images."`);
       }
 
-      if((Math.ceil(images.totalHits/40)+1) <= newsApiService.page){
+      if((Math.ceil(newData.totalHits/40)+1) <= newsApiService.page){
         loadMoreBtn.hide();
       }else{
         loadMoreBtn.show();
         loadMoreBtn.enable();
       }
-    })
   }
 }
 
-function onLoadMore() {
+async function onLoadMore() {
   loadMoreBtn.disable();
 
   console.log(newsApiService.page)
 
-  newsApiService.fetchArticles().then(images => {
-    renderMarkup(images.hits);
+  const newData = await newsApiService.fetchArticles();
+    renderMarkup(newData.hits);
     lightbox.refresh();
     loadMoreBtn.enable();
-  }).catch(error => console.error(error))
-}
+  }
 
 
 function  deleteMarkup() {
@@ -74,10 +68,7 @@ function  deleteMarkup() {
 }
 
 function renderMarkup(data) {
-  console.log(data)
-  console.log(data.length)
-
-  if (data.length === 0) {
+ if (data.length === 0) {
     Notify.failure("Sorry, there are no images matching your search query. Please try again.");
     loadMoreBtn.hide();
   } else {

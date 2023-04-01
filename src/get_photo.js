@@ -1,6 +1,6 @@
-const BACK_END_URL =  'https://pixabay.com/api/'
-const API_KEY = '34779436-d80b9ac3ac8a63557a918f5f0'
-
+import axios from "axios";
+axios.defaults.baseURL = 'https://pixabay.com/api/';
+const API_KEY = '34779436-d80b9ac3ac8a63557a918f5f0';
 export default class NewsApiService {
   constructor() {
     this.inputValue = '';
@@ -8,15 +8,26 @@ export default class NewsApiService {
   }
   
   async fetchArticles() {
-    console.log(this)
-    console.log(this.page)
-    const url = `${BACK_END_URL}/?key=${API_KEY}&q=${this.inputValue}&image_type=photo&orientation=horizontal&safesearch=true&per_page=40&page=${this.page}`
-    const response = await fetch(url);
-    const data = await response.json();
-    console.log(data);
-    this.incrementPage();
-    return data;
+    
+      
+      try {
+          // console.log(this)
+          // console.log(this.page)
+          const url = `?key=${API_KEY}&q=${this.inputValue}&image_type=photo&orientation=horizontal&safesearch=true&per_page=40&page=${this.page}`
+          const response = await axios.get(url);
+        //   const data = await response.json();
+          console.log(response);
+          this.incrementPage();
+        return response.data;
+    }
+
+    catch (error) {
+        console.error(error);
+    }
+
   }
+    
+  
 
   incrementPage() {
     this.page += 1;
